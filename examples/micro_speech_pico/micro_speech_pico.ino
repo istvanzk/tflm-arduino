@@ -1,6 +1,6 @@
 /* Copyright 2023 The TensorFlow Authors. All Rights Reserved.
 
-Modified by IzK, June 20204.
+Modified by IzK, June 2024.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,17 +48,33 @@ int32_t previous_time = 0;
 // Create an area of memory to use for input, output, and intermediate arrays.
 // The size of this will depend on the model you're using, and may need to be
 // determined by experimentation.
-constexpr int kTensorArenaSize = 10 * 1024;
+constexpr int kTensorArenaSize = 30 * 1024;
 // Keep aligned to 16 bytes for CMSIS
 alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 int8_t feature_buffer[kFeatureElementCount];
 int8_t* model_input_buffer = nullptr;
+using MicroAudioOpResolver = tflite::MicroMutableOpResolver<4>;
 }  // namespace
+
+// Pull in only the operation implementations we need.
+// This relies on a complete list of all the ops needed by this graph.
+TfLiteStatus RegisterOps(MicroAudioOpResolver& micro_op_resolver) {
+  TF_LITE_ENSURE_STATUS(micro_op_resolver.AddDepthwiseConv2D());
+  TF_LITE_ENSURE_STATUS(micro_op_resolver.AddFullyConnected());
+  TF_LITE_ENSURE_STATUS(micro_op_resolver.AddSoftmax());
+  TF_LITE_ENSURE_STATUS(micro_op_resolver.AddReshape());
+  return kTfLiteOk;
+}
+// An easier approach is to just use the AllOpsResolver, but this will
+// incur some penalty in code space for op implementations that are not
+// needed by this graph.
+// tflite::AllOpsResolver resolver;
+
 
 // The name of this function is important for Arduino compatibility.
 void setup() {
-  // IzK: This is defined in "tensorflow/lite/micro/system_setup.cpp" and simply intializes the Serial port
-  tflite::InitializeTarget();
+  // IzK: This is defined in "tensorflow/lite/micro/system_setup.cpp" and simply initializes the Serial port
+  tflite::InitializeTarget(115200);
 
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
@@ -70,28 +86,12 @@ void setup() {
         model->version(), TFLITE_SCHEMA_VERSION);
     return;
   }
+  //else{
+  //  MicroPrintf("Model schema version: %d", model->version());
+  //}
 
-  // An easier approach is to just use the AllOpsResolver, but this will
-  // incur some penalty in code space for op implementations that are not
-  // needed by this graph.
-  // tflite::AllOpsResolver resolver;
-  // NOLINTNEXTLINE(runtime-global-variables)
-
-  // Pull in only the operation implementations we need.
-  // This relies on a complete list of all the ops needed by this graph.
-  static tflite::MicroMutableOpResolver<4> micro_op_resolver;
-  if (micro_op_resolver.AddDepthwiseConv2D() != kTfLiteOk) {
-    return;
-  }
-  if (micro_op_resolver.AddFullyConnected() != kTfLiteOk) {
-    return;
-  }
-  if (micro_op_resolver.AddSoftmax() != kTfLiteOk) {
-    return;
-  }
-  if (micro_op_resolver.AddReshape() != kTfLiteOk) {
-    return;
-  }
+  static MicroAudioOpResolver micro_op_resolver;
+  RegisterOps(micro_op_resolver);
 
   // Build an interpreter to run the model with.
   static tflite::MicroInterpreter static_interpreter(
@@ -128,6 +128,13 @@ void setup() {
 
   previous_time = 0;
 
+  // Set everything up to start receiving audio
+  TfLiteStatus init_status = InitAudioRecording();
+  if (init_status != kTfLiteOk) {
+    MicroPrintf("InitAudioRecording failed");
+    return;
+  }
+  
   MicroPrintf("Initialization complete");
 }
 
@@ -148,14 +155,22 @@ void loop() {
       previous_time, current_time, &how_many_new_slices);
   if (feature_status != kTfLiteOk) {
     MicroPrintf("Feature generation failed");
-    return;
+    //return;
   }
+  //else {
+  //  MicroPrintf("Feature generation succeded");
+  //}
+
   previous_time += how_many_new_slices * kFeatureSliceStrideMs;
   // If no new audio samples have been received since last time, don't bother
   // running the network model.
   if (how_many_new_slices == 0) {
-    return;
+    MicroPrintf("No new audio samples received");
+    //return;
   }
+  //else {
+  //  MicroPrintf("%d audio samples received", how_many_new_slices);
+  //}
 
   // Copy feature buffer to input tensor
   for (int i = 0; i < kFeatureElementCount; i++) {
@@ -166,8 +181,11 @@ void loop() {
   TfLiteStatus invoke_status = interpreter->Invoke();
   if (invoke_status != kTfLiteOk) {
     MicroPrintf("Invoke failed");
-    return;
+    //return;
   }
+  //else {
+  //  MicroPrintf("Invoke succeded");
+  //}
 
   // Obtain a pointer to the output tensor
   TfLiteTensor* output = interpreter->output(0);
@@ -179,8 +197,11 @@ void loop() {
       output, current_time, &found_command, &score, &is_new_command);
   if (process_status != kTfLiteOk) {
     MicroPrintf("RecognizeCommands::ProcessLatestResults() failed");
-    return;
+    //return;
   }
+  //else {
+  //  MicroPrintf("RecognizeCommands::ProcessLatestResults() succeded: %d", is_new_command);
+  //}
   // Do something based on the recognized command. The default implementation
   // just prints to the error console, but you should replace this with your
   // own function for a real application.

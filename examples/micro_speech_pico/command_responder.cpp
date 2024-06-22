@@ -45,6 +45,7 @@ void RespondToCommand(int32_t current_time, const char* found_command,
     gpio_init(LED_PIN);
     gpio_set_dir(LED_PIN, GPIO_OUT);
     is_initialized = true;
+    MicroPrintf("RespondCommand: initialized");
   }
 
   if (is_new_command) {
@@ -58,6 +59,9 @@ void RespondToCommand(int32_t current_time, const char* found_command,
       //turn led off
       gpio_put(LED_PIN, 0);
     }
+  }
+  else {
+    MicroPrintf("RespondCommand: no new command");
   }
 }
 

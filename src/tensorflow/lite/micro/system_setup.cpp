@@ -342,7 +342,7 @@ extern "C" void DebugLog(const char* format, va_list args) {
   char log_buffer[kMaxLogLen];
   DebugVsnprintf(log_buffer, kMaxLogLen, format, args);
   DEBUG_SERIAL_OBJECT.print(log_buffer);
-  DEBUG_SERIAL_OBJECT.print("\r\n");
+  //DEBUG_SERIAL_OBJECT.print("\r\n");
 }
 
 #else
@@ -355,8 +355,8 @@ namespace tflite {
 
 constexpr ulong kSerialMaxInitWait = 4000;  // milliseconds
 
-void InitializeTarget() {
-  DEBUG_SERIAL_OBJECT.begin(9600);
+void InitializeTarget(const int baud) {
+  DEBUG_SERIAL_OBJECT.begin(baud);
   ulong start_time = millis();
   while (!DEBUG_SERIAL_OBJECT) {
     // allow for Arduino IDE Serial Monitor synchronization

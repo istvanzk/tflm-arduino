@@ -32,7 +32,7 @@ src/analog_audio_provider.cpp
 #ifdef RP2040_BOARD
 #include "pico/stdlib.h"
 
-#define ADC_PIN 26
+#define ADC_PIN D26
 #define CAPTURE_CHANNEL 0
 
 #define ADC_BIAS_VOLTAGE 1.65 //V
@@ -119,14 +119,7 @@ TfLiteStatus InitAudioRecording() {
 
 TfLiteStatus GetAudioSamples(int start_ms, int duration_ms,
                              int* audio_samples_size, int16_t** audio_samples) {
-  // Set everything up to start receiving audio
-  if (!g_is_audio_initialized) {
-    TfLiteStatus init_status = InitAudioRecording();
-    if (init_status != kTfLiteOk) {
-      return init_status;
-    }
-    g_is_audio_initialized = true;
-  }
+  
   // This next part should only be called when the main thread notices that the
   // latest audio sample data timestamp has changed, so that there's new data
   // in the capture ring buffer. The ring buffer will eventually wrap around and

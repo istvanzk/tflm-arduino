@@ -21,6 +21,8 @@ NOTES:
     See https://github.com/espressif/esp-tflite-micro/blob/master/examples/micro_speech/main/micro_features_generator.cc
 */
 
+// Disable profiling the code execution
+#undef PROFILE_MICRO_SPEECH
 
 #include "micro_features_generator.h"
 
@@ -115,11 +117,13 @@ TfLiteStatus GenerateSingleFeature(const int16_t* audio_data,
               tflite::GetTensorData<int16_t>(input));
   if (interpreter->Invoke() != kTfLiteOk) {
     MicroPrintf("Single Feature generator model invocation failed");
+    return kTfLiteError;
   }
-
   std::copy_n(tflite::GetTensorData<int8_t>(output), kFeatureSliceSize,
               feature_output);
-
+#ifdef PROFILE_MICRO_SPEECH
+  MicroPrintf("Single Feature generator model invocation succeded");
+#endif
   return kTfLiteOk;
 }
 
@@ -137,7 +141,9 @@ TfLiteStatus GenerateMicroFeatures(const int16_t* input,
     input += kAudioSampleStrideCount;
     remaining_samples -= kAudioSampleStrideCount;
   }
-
+#ifdef PROFILE_MICRO_SPEECH
+  MicroPrintf("Features generator invocation succeded");
+#endif
   return kTfLiteOk;
 
 }

@@ -16,6 +16,9 @@ limitations under the License.
 From: https://github.com/espressif/esp-tflite-micro/blob/master/examples/micro_speech/main/feature_provider.cc
 */
 
+// Disable profiling the code execution
+#undef PROFILE_MICRO_SPEECH
+
 #include "feature_provider.h"
 #include "audio_provider.h"
 #include "micro_features_generator.h"
@@ -56,6 +59,9 @@ TfLiteStatus FeatureProvider::PopulateFeatureData(
     if (init_status != kTfLiteOk) {
       return init_status;
     }
+#ifdef PROFILE_MICRO_SPEECH
+    MicroPrintf("PopulateFeatureData():InitializeMicroFeatures");
+#endif
     is_first_run_ = false;
     slices_needed = kFeatureSliceCount;
   }
@@ -63,7 +69,9 @@ TfLiteStatus FeatureProvider::PopulateFeatureData(
     slices_needed = kFeatureSliceCount;
   }
   *how_many_new_slices = slices_needed;
-
+#ifdef PROFILE_MICRO_SPEECH
+  MicroPrintf("PopulateFeatureData(): slices_needed=%d (%d - %d)", slices_needed, current_step, last_step);
+#endif
   const int slices_to_keep = kFeatureSliceCount - slices_needed;
   const int slices_to_drop = kFeatureSliceCount - slices_to_keep;
   // If we can avoid recalculating some slices, just move the existing data
