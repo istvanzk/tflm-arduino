@@ -121,10 +121,9 @@ grep board= `find . -name boards.txt` | cut -f2 -d= | sort -u
 ```
 
 **NOTE**: The [system_setup.cpp](/src/tensorflow/lite/micro/system_setup.cpp) implementation fixes at least two issues encoutered with the older version of the library:
-1. The error of missing/wrong definition for `DebugLog()` function, see e.g. [undefined reference to 'DebugLog' in micro_error_reporter.cpp](https://github.com/arduino/ArduinoTensorFlowLiteTutorials/issues/35). The `tensorflow/lite/micro/micro_error_reporter.h` is not used anymore, and is replaced by the use of `tensorflow/lite/micro/micro_log.h`: `MicroPrintf()` uses `DebugLog()` and `DebugLog()` uses `DebugVsnprintf()`, etc.
+1. The error of missing/wrong definition for `DebugLog()` function, see e.g. [undefined reference to 'DebugLog' in micro_error_reporter.cpp](https://github.com/arduino/ArduinoTensorFlowLiteTutorials/issues/35). The `tensorflow/lite/micro/micro_error_reporter.h` is not used anymore, and is replaced by the use of `tensorflow/lite/micro/micro_log.h`: `MicroPrintf()` uses `DebugLog()` and `DebugLog()` uses the Arduino `Serial.printf()`
 
-2. The missing correct `DebugVsnprintf()` function, which allows the use of the `MicroPrintf()` to output printf like formated strings to the serial output/console. 
-This code is adapted from the old (up to 2023) version of the `MicroVsnprintf()` in `micro_string.cpp`.
+2. The missing correct `DebugVsnprintf()` function, which allows the use of the `MicroVsnprintf()` to output printf like formated strings to the serial output/console. `DebugVsnprintf()` uses `vsnprintf()`.
 
 3. Most of the new [system_setup.cpp](/src/tensorflow/lite/micro/system_setup.cpp) implementation is pulled in only if `!defined(TF_LITE_STRIP_ERROR_STRINGS)` and `TF_LITE_STRIP_ERROR_STRINGS` can be undefined e.g. in `micro_speech_pico.ino`. Else, a simple `DebugLog()` function without printf like formating is compiled, to reduce the code size.
 
