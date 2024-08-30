@@ -19,34 +19,27 @@ limitations under the License.
 #ifdef ARDUINO
 #include <Arduino.h>
 #include <Wire.h>
-
-#else  // ARDUINO
-#error "These peripherals implementations are for ARDUINO IDE framework!"
-#endif  // ARDUINO
+#include <PDM.h>
 
 #include "utility.h"
 
-#ifdef ARDUINO
-
 // The preprocessor definition format in Arduino IDE is:
 //    ARDUINO_<PROCESSOR-DESCRIPTOR>_<BOARDNAME>
-// The <PROCESSOR-DESCRIPTOR>_<BOARDNAME> for the installed boards 
+// The <PROCESSOR-DESCRIPTOR>_<BOARDNAME> for the installed boards
 // can be listed by running in the base Arduino directory, the following command:
 //    grep board= `find . -name boards.txt` | cut -f2 -d= | sort -u
-// E.g. ARDUINO_ARDUINO_NANO33BLE or ARDUINO_SPARKFUN_MICROMOD_RP2040
-#if defined(ARDUINO_SPARKFUN_MICROMOD_RP2040)
-#define RP2040_BOARD 
+// E.g. ARDUINO_NANO_RP2040_CONNECT or ARDUINO_SPARKFUN_MICROMOD_RP2040
+#if defined(ARDUINO_SPARKFUN_MICROMOD_RP2040) || defined(ARDUINO_NANO_RP2040_CONNECT)
+#define RP2040_BOARD
 
 #include <cstdint>
-
 #include "led.h"
 #include "analog_microphone.h"
-#include "pdm_microphone.h"
 
 namespace peripherals {
 
 constexpr pin_size_t kI2S_BIT_CLK = D18;
-constexpr pin_size_t kI2S_LR_CLK = D19; 
+constexpr pin_size_t kI2S_LR_CLK = D19;
 constexpr pin_size_t kI2S_DATA_IN = D21;
 //constexpr pin_size_t kI2S_DATA_OUT = D22;
 constexpr uint32_t kI2S_IRQ_PRIORITY = 7;
@@ -57,10 +50,12 @@ constexpr pin_size_t kLED_DEFAULT_GPIO = D25;
 
 }  // namespace peripherals
 
-#else  
-#error "Unsupported board!"
-#endif // defined(ARDUINO_SPARKFUN_MICROMOD_RP2040)
+#else
+#error "Unsupported board! Not a RP2040 based board selected!"
+#endif // defined(ARDUINO_SPARKFUN_MICROMOD_RP2040) || defined(ARDUINO_NANO_RP2040_CONNECT)
 
+#else  // ARDUINO
+#error "These peripherals implementations are for ARDUINO IDE framework!"
 #endif  // ARDUINO
 
 #endif  // PERIPHERALS_H_

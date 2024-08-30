@@ -91,7 +91,7 @@ However, please note that the original code in `src/peripherals` from [TensorFlo
 The modified [src/peripherals](/src/peripherals/) includes a bare minimum implementation, for only three peripherals: 
 * LED - which should work with all the Arduino compatible boards
 * Analog microphone - which is meant to be used with RP2040 based boards (using [src/peripherals/analog_microphone](src/peripherals/analog_microphone.cpp))
-* PDM microphone - which can be used with RP2040 based boards (using [src/peripherals/pdm_microphone](src/peripherals/pdm_microphone.cpp)) or any other Arduino board with on-board PDM microphone (using the [PDM Arduino library](https://docs.arduino.cc/learn/built-in-libraries/pdm/))
+* PDM microphone - which can be used with RP2040 based boards or any other Arduino board with on-board PDM microphone (using the [PDM Arduino library](https://docs.arduino.cc/learn/built-in-libraries/pdm/))
 
 See the [/src/peripherals/README](/src/peripherals/README.md) for details.
 These adaptations were required to make the library code work with the latest official Arduino and Tensorflow Lite Micro libraries.
@@ -100,14 +100,14 @@ The included [micro_speech_pico](/examples/micro_speech_pico/) example code has 
 
 The [peripherals.h](/src/peripherals/peripherals.h) implementation uses:
 ```
-#if defined(ARDUINO_SPARKFUN_MICROMOD_RP2040)
+#if defined(ARDUINO_SPARKFUN_MICROMOD_RP2040) || defined(ARDUINO_NANO_RP2040_CONNECT)
 #define RP2040_BOARD 
 ...
 ```
 
 and the [system_setup.cpp](/src/tensorflow/lite/micro/system_setup.cpp) implementation uses:
 ```
-#if defined(ARDUINO) && !defined(ARDUINO_SPARKFUN_MICROMOD_RP2040)
+#if defined(ARDUINO) && !defined(ARDUINO_SPARKFUN_MICROMOD_RP2040) && || !defined(ARDUINO_NANO_RP2040_CONNECT)
 #define ARDUINO_EXCLUDE_CODE
 #endif  // defined(ARDUINO) && !defined(ARDUINO_SPARKFUN_MICROMOD_RP2040)
 

@@ -24,13 +24,13 @@ limitations under the License.
 
 // The preprocessor definition format in Arduino IDE is:
 //    ARDUINO_<PROCESSOR-DESCRIPTOR>_<BOARDNAME>
-// The <PROCESSOR-DESCRIPTOR>_<BOARDNAME> for the installed boards 
+// The <PROCESSOR-DESCRIPTOR>_<BOARDNAME> for the installed boards
 // can be listed by running in the base Arduino directory, the following command:
 //    grep board= `find . -name boards.txt` | cut -f2 -d= | sort -u
-// E.g. ARDUINO_ARDUINO_NANO33BLE or ARDUINO_SPARKFUN_MICROMOD_RP2040
-#if defined(ARDUINO) && !defined(ARDUINO_SPARKFUN_MICROMOD_RP2040)
+// E.g. ARDUINO_NANO_RP2040_CONNECT or ARDUINO_SPARKFUN_MICROMOD_RP2040
+#if defined(ARDUINO) && !defined(ARDUINO_SPARKFUN_MICROMOD_RP2040) && !defined(ARDUINO_NANO_RP2040_CONNECT)
 #define ARDUINO_EXCLUDE_CODE
-#endif  // defined(ARDUINO) && !defined(ARDUINO_SPARKFUN_MICROMOD_RP2040)
+#endif  // defined(ARDUINO) && !defined(ARDUINO_SPARKFUN_MICROMOD_RP2040) && !defined(ARDUINO_NANO_RP2040_CONNECT)
 
 #ifndef ARDUINO_EXCLUDE_CODE
 
@@ -163,4 +163,6 @@ void SerialWrite(const char* buffer) { DEBUG_SERIAL_OBJECT.print(buffer); }
 
 }  // namespace test_over_serial
 
+#else
+#error "Unsupported board! Not a RP2040 based board selected!"
 #endif  // ARDUINO_EXCLUDE_CODE

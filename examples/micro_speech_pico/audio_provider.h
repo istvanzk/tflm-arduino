@@ -21,8 +21,10 @@ lib/pico-tflmicro @ 6ff6387/examples/micro_speech/audio_provider.h
 #define TENSORFLOW_LITE_MICRO_EXAMPLES_MICRO_SPEECH_AUDIO_PROVIDER_H_
 
 // Leave only one defined to use analog or PDM microphone
-#define ANALOG_MIC
-//#define PDM_MIC
+// Uses the custom peripherals/analogue_microphone
+//#define ANALOG_MIC
+// Uses the Arduino PDM library (see https://docs.arduino.cc/learn/built-in-libraries/pdm/)
+#define PDM_MIC
 
 #include "tensorflow/lite/c/common.h"
 
